@@ -7,7 +7,7 @@
             "type": "process",
             "args": [
                 "build",
-                "${workspaceFolder}/lol-item-calculator.csproj"
+                "${workspaceFolder}/lol-calculator.csproj"
             ],
             "problemMatcher": "$msCompile"
         }

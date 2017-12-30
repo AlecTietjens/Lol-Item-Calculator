@@ -5,7 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 
-namespace lol_item_calculator.Controllers
+namespace lol_calculator.Controllers
 {
     public class HomeController : Controller
     {

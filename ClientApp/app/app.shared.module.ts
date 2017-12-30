@@ -9,7 +9,7 @@ import { NavMenuComponent } from './components/navmenu/navmenu.component';
 import { HomeComponent } from './components/home/home.component';
 import { FetchDataComponent } from './components/fetchdata/fetchdata.component';
 import { CounterComponent } from './components/counter/counter.component';
-import { ItemCalculatorComponent } from './components/itemcalculator/itemcalculator.component';
+import { LeagueCalculatorComponent } from './components/leaguecalculator/leaguecalculator.component';
 
 @NgModule({
     declarations: [
@@ -17,7 +17,7 @@ import { ItemCalculatorComponent } from './components/itemcalculator/itemcalcula
         NavMenuComponent,
         CounterComponent,
         FetchDataComponent,
-        ItemCalculatorComponent,
+        LeagueCalculatorComponent,
         HomeComponent
     ],
     imports: [
@@ -29,7 +29,7 @@ import { ItemCalculatorComponent } from './components/itemcalculator/itemcalcula
             { path: 'home', component: HomeComponent },
             { path: 'counter', component: CounterComponent },
             { path: 'fetch-data', component: FetchDataComponent },
-            { path: 'item-calculator', component: ItemCalculatorComponent },
+            { path: 'item-calculator', component: LeagueCalculatorComponent },
             { path: '**', redirectTo: 'home' }
         ])
     ]

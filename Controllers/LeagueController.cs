@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
-namespace lol_item_calculator.Controllers
+namespace lol_calculator.Controllers
 {
     [Route("api/[controller]")]
     public class LeagueCalculatorController : Controller
@@ -20,23 +20,27 @@ namespace lol_item_calculator.Controllers
 
         private static HttpClient Client = new HttpClient();
 
+        private static IList<string> CacheContent = new List<string>();
+
         // currently this method pulls the data from a json file made by the UpdateItems method
         [HttpGet("[action]")]
-        public async Task<ItemList> Items() {
+        public async Task<IEnumerable<Item>> Items() {
             string json = await System.IO.File.ReadAllTextAsync("./items.json");
 
-            ItemList items = JsonConvert.DeserializeObject<ItemList>(json);
+            ItemList itemList = JsonConvert.DeserializeObject<ItemList>(json);
+            IEnumerable<Item> items = itemList.Data.Values;
 
-            return items;
+            return await UpdateClientCacheContentAsync(items); // method returns argument, if successful
         }
 
         [HttpGet("[action]")]
-        public async Task<ChampionList> ChampionAsync() {
+        public async Task<IEnumerable<Champion>> Champions() {
             string json = await System.IO.File.ReadAllTextAsync("./champions.json");
 
-            ChampionList champions = JsonConvert.DeserializeObject<ChampionList>(json);
+            ChampionList championList = JsonConvert.DeserializeObject<ChampionList>(json);
+            IEnumerable<Champion> champions = championList.Data.Values;
 
-            return champions;
+            return await UpdateClientCacheContentAsync(champions); // method returns argument, if successful
         }
 
         // right now this method just gets the items from the league API and puts them into a json file
@@ -66,6 +70,34 @@ namespace lol_item_calculator.Controllers
 
                 await System.IO.File.WriteAllTextAsync("./champions.json", content);
             }
+        }
+
+        private static async Task<IEnumerable<T>> UpdateClientCacheContentAsync<T>(IEnumerable<T> content) {
+            foreach(var c in content) {
+                var thing = c.GetType();
+                if (c.GetType().Equals(typeof(Item)) || c.GetType().Equals(typeof(Champion))) {
+                    var image = c.GetType().GetProperty("Image").GetValue(c);
+                    var imageFull = image.GetType().GetProperty("Full").GetValue(image);
+                    var imageUri = "http://ddragon.leagueoflegends.com/cdn/6.24.1/img/" + c.GetType().Name.ToLower() + "/" + imageFull;
+                    
+                    // set URL for the image - kind of a weird spot to do this, but oh well
+                    image.GetType().GetProperty("Url").SetValue(image, imageUri);
+
+                    if (!CacheContent.Contains(imageUri))
+                        CacheContent.Add(imageUri);
+                }
+                else if (c.GetType().Equals(typeof(string))) {
+                    // implement... in case we want to genericize for when string values are to be added
+                }
+                else {
+                    // implement... probably just want to return
+                }
+            }   
+            string[] swLines = await System.IO.File.ReadAllLinesAsync("./wwwroot/sw.js");
+            swLines[0] = "var contentToCache = ['" + String.Join("','", CacheContent) + "'];";
+            await System.IO.File.WriteAllLinesAsync("./wwwroot/sw.js", swLines);
+
+            return content;
         }
 
         // item models
@@ -101,6 +133,8 @@ namespace lol_item_calculator.Controllers
             public IEnumerable<string> From { get; set; }
             public string Group { get; set; }
             public bool ConsumedOnFull { get; set; }
+            public string Name { get; set; }
+            public bool Consumed { get; set; }
             public string SanitizedDescription { get; set; }
             public int Depth { get; set; }
             public int Stacks { get; set; }
@@ -292,6 +326,7 @@ namespace lol_item_calculator.Controllers
             public int W { get; set; }
             public int Y { get; set; }
             public int X { get; set; }
+            public string Url { get; set; } // this is not a property from LoL API
         }
     }
 }
